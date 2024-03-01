@@ -46,6 +46,21 @@ def folder_exists_and_not_empty(s3_client, bucket:str, path:str) -> bool:
     resp = s3_client.list_objects(Bucket=bucket, Prefix=path, Delimiter='/',MaxKeys=1)
     return 'Contents' in resp
 
+def file_exists(s3_client, bucket:str, path:str, object_name:str) -> bool:
+    try:
+        s3_client.head_object(Bucket=bucket, Key=path+object_name)
+    except ClientError as e:
+        if e.response['Error']['Code'] == "404":
+            # The object does not exist.
+            return False
+        else:
+            # Something else has gone wrong.
+            print("An error occurred")
+            raise
+    else:
+        # The object does exist.
+        return True
+
 
 def upload_file(s3_client, file_name, bucket, path, object_name=None, verbose=True):
     """Upload a file to an S3 bucket
